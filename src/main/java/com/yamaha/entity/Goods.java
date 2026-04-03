@@ -1,68 +1,35 @@
 package com.yamaha.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
-@Entity
+@Data
+@TableName("goods")
 public class Goods implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    private static final long serialVersionUID = 1L;
+
+    @TableId(type = IdType.AUTO)
     private Long id;
+
     private String name;
+
     private Double price;
+
     private Integer stock;
+
     private String image;
+
     private String description;
 
-    public Long getId() {
-        return id;
-    }
+    private Integer status;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    private LocalDateTime createTime;
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
-    }
-
-    public Integer getStock() {
-        return stock;
-    }
-
-    public void setStock(Integer stock) {
-        this.stock = stock;
-    }
-
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    private LocalDateTime updateTime;
 }

@@ -1,11 +1,12 @@
 package com.yamaha.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.yamaha.common.PageDTO;
+import com.yamaha.common.Result;
 import com.yamaha.entity.Goods;
 import com.yamaha.service.GoodsService;
 import com.yamaha.util.CosUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,57 +15,55 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/goods")
+@RequiredArgsConstructor
 public class GoodsController {
-    @Autowired
-    private GoodsService goodsService;
 
-    @Autowired
-    private CosUtil cosUtil;
+    private final GoodsService goodsService;
+    private final CosUtil cosUtil;
 
-    @GetMapping
-    public ResponseEntity<List<Goods>> getAllGoods() {
-        return ResponseEntity.ok(goodsService.getAllGoods());
+    @GetMapping("/page")
+    public Result<IPage<Goods>> page(PageDTO pageDTO) {
+        return Result.success(goodsService.pageGoods(pageDTO.getPageNum(), pageDTO.getPageSize()));
+    }
+
+    @GetMapping("/list")
+    public Result<List<Goods>> list() {
+        return Result.success(goodsService.list());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Goods> getGoodsById(@PathVariable Long id) {
-        return goodsService.getGoodsById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public Result<Goods> getById(@PathVariable Long id) {
+        Goods goods = goodsService.getById(id);
+        if (goods != null && goods.getImage() != null) {
+            goods.setImage(cosUtil.getFullImageUrl(goods.getImage()));
+        }
+        return Result.success(goods);
     }
 
     @PostMapping
-    public ResponseEntity<Goods> createGoods(@RequestBody Goods goods) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(goodsService.saveGoods(goods));
+    public Result<Boolean> save(@RequestBody Goods goods) {
+        return Result.success(goodsService.save(goods));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Goods> updateGoods(@PathVariable Long id, @RequestBody Goods goods) {
-        return goodsService.getGoodsById(id)
-                .map(existingGoods -> {
-                    goods.setId(id);
-                    return ResponseEntity.ok(goodsService.saveGoods(goods));
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public Result<Boolean> update(@PathVariable Long id, @RequestBody Goods goods) {
+        goods.setId(id);
+        return Result.success(goodsService.updateById(goods));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteGoods(@PathVariable Long id) {
-        return goodsService.getGoodsById(id)
-                .map(existingGoods -> {
-                    goodsService.deleteGoods(id);
-                    return ResponseEntity.noContent().build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public Result<Boolean> delete(@PathVariable Long id) {
+        return Result.success(goodsService.removeById(id));
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file, @RequestParam("folder") String folder) {
+    public Result<String> upload(@RequestParam("file") MultipartFile file,
+                                  @RequestParam("folder") String folder) {
         try {
             String imagePath = cosUtil.uploadFile(file, folder);
-            return ResponseEntity.ok(imagePath);
+            return Result.success(imagePath);
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("上传失败: " + e.getMessage());
+            return Result.error("上传失败: " + e.getMessage());
         }
     }
 }
