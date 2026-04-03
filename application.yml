@@ -12,6 +12,12 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+cos:
+  secret-id: ${COS_SECRET_ID}
+  secret-key: ${COS_SECRET_KEY}
+  bucket: motorcycle-shop-1306776476
+  region: ap-shanghai
+  base-url: https://motorcycle-shop-1306776476.cos.ap-shanghai.myqcloud.com/
 server:
   port: 8080
   servlet:
