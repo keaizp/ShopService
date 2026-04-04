@@ -8,7 +8,9 @@ import com.yamaha.service.UserService;
 import com.yamaha.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -20,6 +22,13 @@ import java.util.Map;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     private final JwtUtil jwtUtil;
+    private final RestTemplate restTemplate;
+
+    @Value("${wxAppId}")
+    private String wxAppId;
+
+    @Value("${wxAppSecret}")
+    private String wxAppSecret;
 
     @Override
     public User getByOpenid(String openid) {
@@ -31,34 +40,54 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public Map<String, Object> login(String code) {
         log.info("用户登录, code: {}", code);
-        // 这里需要调用微信API获取openid
-        // 暂时模拟，实际项目中需要对接微信登录API
-        String openid = "mock_openid_" + System.currentTimeMillis();
-        log.info("获取到openid: {}", openid);
         
-        User user = this.getByOpenid(openid);
-        if (user == null) {
-            log.info("新用户注册, openid: {}", openid);
-            user = new User();
-            user.setOpenid(openid);
-            user.setNickname("用户" + openid.substring(0, 8));
-            user.setStatus(1);
-            this.save(user);
-            log.info("新用户注册成功, ID: {}", user.getId());
-        } else {
-            log.info("用户登录, ID: {}", user.getId());
+        // 调用微信登录API获取openid
+        String url = String.format(
+            "https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code",
+            wxAppId, wxAppSecret, code
+        );
+        
+        try {
+            Map<String, Object> wxResponse = restTemplate.getForObject(url, Map.class);
+            log.info("微信API响应: {}", wxResponse);
+            
+            if (wxResponse == null || wxResponse.containsKey("errcode")) {
+                String errMsg = wxResponse != null ? wxResponse.get("errmsg").toString() : "微信API调用失败";
+                log.error("微信登录失败: {}", errMsg);
+                throw new RuntimeException("微信登录失败: " + errMsg);
+            }
+            
+            String openid = wxResponse.get("openid").toString();
+            log.info("获取到openid: {}", openid);
+            
+            User user = this.getByOpenid(openid);
+            if (user == null) {
+                log.info("新用户注册, openid: {}", openid);
+                user = new User();
+                user.setOpenid(openid);
+                user.setNickname("用户" + openid.substring(0, 8));
+                user.setStatus(1);
+                this.save(user);
+                log.info("新用户注册成功, ID: {}", user.getId());
+            } else {
+                log.info("用户登录, ID: {}", user.getId());
+            }
+            
+            this.updateLastLoginTime(user.getId());
+            
+            // 生成token
+            String token = jwtUtil.generateToken(user.getId(), user.getOpenid());
+            log.info("生成token成功, 用户ID: {}", user.getId());
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("user", user);
+            result.put("token", token);
+            return result;
+            
+        } catch (Exception e) {
+            log.error("微信登录异常", e);
+            throw new RuntimeException("微信登录失败: " + e.getMessage());
         }
-        
-        this.updateLastLoginTime(user.getId());
-        
-        // 生成token
-        String token = jwtUtil.generateToken(user.getId(), user.getOpenid());
-        log.info("生成token成功, 用户ID: {}", user.getId());
-        
-        Map<String, Object> result = new HashMap<>();
-        result.put("user", user);
-        result.put("token", token);
-        return result;
     }
 
     @Override
