@@ -28,7 +28,13 @@ public class GoodsController {
 
     @GetMapping("/list")
     public Result<List<Goods>> list() {
-        return Result.success(goodsService.list());
+        List<Goods> goods = goodsService.list();
+        for (Goods good : goods) {
+            if (good != null && good.getImage() != null) {
+                good.setImage(cosUtil.getFullImageUrl(good.getImage()));
+            }
+        }
+        return Result.success(goods);
     }
 
     @GetMapping("/{id}")
