@@ -3,11 +3,14 @@ package com.yamaha.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yamaha.entity.User;
 
+import java.util.Map;
+
 public interface UserService extends IService<User> {
 
     User getByOpenid(String openid);
 
-    User login(String code);
+    Map<String, Object> login(String code);
 
     void updateLastLoginTime(Long userId);
 }
+

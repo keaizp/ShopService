@@ -6,6 +6,8 @@ import com.yamaha.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
@@ -14,9 +16,9 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/login")
-    public Result<User> login(@RequestParam("code") String code) {
-        User user = userService.login(code);
-        return Result.success(user);
+    public Result<Map<String, Object>> login(@RequestParam("code") String code) {
+        Map<String, Object> result = userService.login(code);
+        return Result.success(result);
     }
 
     @GetMapping("/info")

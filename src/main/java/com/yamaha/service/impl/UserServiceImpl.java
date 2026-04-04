@@ -5,14 +5,21 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yamaha.entity.User;
 import com.yamaha.mapper.UserMapper;
 import com.yamaha.service.UserService;
+import com.yamaha.util.JwtUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+
+    private final JwtUtil jwtUtil;
 
     @Override
     public User getByOpenid(String openid) {
@@ -22,7 +29,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public User login(String code) {
+    public Map<String, Object> login(String code) {
         log.info("用户登录, code: {}", code);
         // 这里需要调用微信API获取openid
         // 暂时模拟，实际项目中需要对接微信登录API
@@ -43,7 +50,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         
         this.updateLastLoginTime(user.getId());
-        return user;
+        
+        // 生成token
+        String token = jwtUtil.generateToken(user.getId(), user.getOpenid());
+        log.info("生成token成功, 用户ID: {}", user.getId());
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("user", user);
+        result.put("token", token);
+        return result;
     }
 
     @Override
