@@ -7,29 +7,29 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("goods")
-public class Goods implements Serializable {
+@TableName("user_address")
+public class UserAddress implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    private Long categoryId;
+    private Long userId;
 
-    private String name;
+    private String receiverName;
 
-    private Double price;
+    private String receiverPhone;
 
-    private Integer stock;
+    private String province;
 
-    private String image;
+    private String city;
 
-    private String description;
+    private String district;
 
-    private Integer status;
+    private String detailAddress;
 
-    private Integer sortOrder;
+    private Integer isDefault;
 
     @TableLogic
     @TableField(fill = FieldFill.INSERT)

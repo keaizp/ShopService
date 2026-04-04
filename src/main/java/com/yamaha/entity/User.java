@@ -7,33 +7,33 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("goods")
-public class Goods implements Serializable {
+@TableName("user")
+public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    private Long categoryId;
+    private String openid;
 
-    private String name;
+    private String unionid;
 
-    private Double price;
+    private String nickname;
 
-    private Integer stock;
+    private String avatar;
 
-    private String image;
+    private String phone;
 
-    private String description;
+    private Integer gender;
 
     private Integer status;
-
-    private Integer sortOrder;
 
     @TableLogic
     @TableField(fill = FieldFill.INSERT)
     private Integer deleted;
+
+    private LocalDateTime lastLoginTime;
 
     private LocalDateTime createTime;
 

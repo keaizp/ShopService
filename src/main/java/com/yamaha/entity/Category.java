@@ -7,29 +7,23 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("goods")
-public class Goods implements Serializable {
+@TableName("category")
+public class Category implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    private Long categoryId;
-
     private String name;
 
-    private Double price;
+    private Long parentId;
 
-    private Integer stock;
-
-    private String image;
-
-    private String description;
-
-    private Integer status;
+    private Integer level;
 
     private Integer sortOrder;
+
+    private Integer status;
 
     @TableLogic
     @TableField(fill = FieldFill.INSERT)

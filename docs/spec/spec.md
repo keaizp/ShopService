@@ -50,63 +50,140 @@ com.yamaha/
 
 ## 2. 数据库设计
 
-### 2.1 商品表 (goods)
+### 2.1 商品分类表 (category) - 逻辑删除
+```sql
+CREATE TABLE `category` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `name` VARCHAR(100) NOT NULL COMMENT '分类名称',
+    `parent_id` BIGINT NOT NULL DEFAULT 0 COMMENT '父分类ID，0为顶级',
+    `level` TINYINT NOT NULL DEFAULT 1 COMMENT '层级：1-一级，2-二级，3-三级',
+    `sort_order` INT NOT NULL DEFAULT 0 COMMENT '排序',
+    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：0-禁用，1-启用',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    INDEX `idx_parent_id` (`parent_id`),
+    INDEX `idx_level` (`level`),
+    INDEX `idx_deleted` (`deleted`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品分类表';
+```
+
+### 2.2 商品表 (goods) - 逻辑删除
 ```sql
 CREATE TABLE `goods` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `category_id` BIGINT DEFAULT NULL COMMENT '分类ID',
     `name` VARCHAR(255) NOT NULL COMMENT '商品名称',
     `price` DECIMAL(10, 2) NOT NULL DEFAULT 0.00 COMMENT '商品价格',
     `stock` INT NOT NULL DEFAULT 0 COMMENT '库存数量',
     `image` VARCHAR(500) DEFAULT NULL COMMENT '商品图片路径',
     `description` TEXT DEFAULT NULL COMMENT '商品描述',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：0-下架，1-上架',
+    `sort_order` INT NOT NULL DEFAULT 0 COMMENT '排序权重',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
+    INDEX `idx_category_id` (`category_id`),
     INDEX `idx_name` (`name`),
-    INDEX `idx_status` (`status`)
+    INDEX `idx_status` (`status`),
+    INDEX `idx_deleted` (`deleted`),
+    INDEX `idx_sort_order` (`sort_order`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品表';
 ```
 
-### 2.2 用户表 (user)
+### 2.3 用户表 (user) - 逻辑删除
 ```sql
 CREATE TABLE `user` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `openid` VARCHAR(64) NOT NULL COMMENT '微信OpenID',
+    `unionid` VARCHAR(64) DEFAULT NULL COMMENT '微信UnionID（多应用统一标识）',
     `nickname` VARCHAR(100) DEFAULT NULL COMMENT '用户昵称',
     `avatar` VARCHAR(500) DEFAULT NULL COMMENT '头像URL',
     `phone` VARCHAR(20) DEFAULT NULL COMMENT '手机号',
+    `gender` TINYINT DEFAULT 0 COMMENT '性别：0-未知，1-男，2-女',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：0-禁用，1-正常',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
+    `last_login_time` DATETIME DEFAULT NULL COMMENT '最后登录时间',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    UNIQUE INDEX `idx_openid` (`openid`)
+    UNIQUE INDEX `idx_openid` (`openid`),
+    INDEX `idx_unionid` (`unionid`),
+    INDEX `idx_phone` (`phone`),
+    INDEX `idx_deleted` (`deleted`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
 ```
 
-### 2.3 订单表 (order)
+### 2.4 用户地址表 (user_address) - 逻辑删除
+```sql
+CREATE TABLE `user_address` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `user_id` BIGINT NOT NULL COMMENT '用户ID',
+    `receiver_name` VARCHAR(50) NOT NULL COMMENT '收货人姓名',
+    `receiver_phone` VARCHAR(20) NOT NULL COMMENT '收货人电话',
+    `province` VARCHAR(50) NOT NULL COMMENT '省份',
+    `city` VARCHAR(50) NOT NULL COMMENT '城市',
+    `district` VARCHAR(50) NOT NULL COMMENT '区县',
+    `detail_address` VARCHAR(255) NOT NULL COMMENT '详细地址',
+    `is_default` TINYINT NOT NULL DEFAULT 0 COMMENT '是否默认：0-否，1-是',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    INDEX `idx_user_id` (`user_id`),
+    INDEX `idx_deleted` (`deleted`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户地址表';
+```
+
+### 2.5 购物车表 (cart) - 物理删除
+```sql
+CREATE TABLE `cart` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `user_id` BIGINT NOT NULL COMMENT '用户ID',
+    `goods_id` BIGINT NOT NULL COMMENT '商品ID',
+    `quantity` INT NOT NULL DEFAULT 1 COMMENT '购买数量',
+    `selected` TINYINT NOT NULL DEFAULT 1 COMMENT '是否选中：0-未选中，1-已选中',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE INDEX `idx_user_goods` (`user_id`, `goods_id`),
+    INDEX `idx_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='购物车表';
+```
+
+### 2.6 订单表 (order) - 禁止删除
 ```sql
 CREATE TABLE `order` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `order_no` VARCHAR(32) NOT NULL COMMENT '订单编号',
     `user_id` BIGINT NOT NULL COMMENT '用户ID',
     `total_amount` DECIMAL(10, 2) NOT NULL COMMENT '订单总金额',
-    `status` TINYINT NOT NULL DEFAULT 0 COMMENT '订单状态：0-待支付，1-已支付，2-已完成，3-已取消',
+    `pay_amount` DECIMAL(10, 2) NOT NULL COMMENT '实付金额',
+    `discount_amount` DECIMAL(10, 2) NOT NULL DEFAULT 0.00 COMMENT '优惠金额',
+    `status` TINYINT NOT NULL DEFAULT 0 COMMENT '订单状态：0-待支付，1-已支付，2-已发货，3-已完成，4-已取消，5-退款中，6-已退款',
+    `pay_type` TINYINT DEFAULT NULL COMMENT '支付方式：1-微信支付',
     `pay_time` DATETIME DEFAULT NULL COMMENT '支付时间',
-    `address` VARCHAR(500) DEFAULT NULL COMMENT '收货地址',
-    `receiver_name` VARCHAR(50) DEFAULT NULL COMMENT '收货人姓名',
-    `receiver_phone` VARCHAR(20) DEFAULT NULL COMMENT '收货人电话',
+    `delivery_time` DATETIME DEFAULT NULL COMMENT '发货时间',
+    `receive_time` DATETIME DEFAULT NULL COMMENT '收货时间',
+    `address_id` BIGINT NOT NULL COMMENT '收货地址ID',
+    `receiver_name` VARCHAR(50) NOT NULL COMMENT '收货人姓名',
+    `receiver_phone` VARCHAR(20) NOT NULL COMMENT '收货人电话',
+    `receiver_address` VARCHAR(500) NOT NULL COMMENT '完整收货地址',
     `remark` VARCHAR(255) DEFAULT NULL COMMENT '订单备注',
+    `cancel_reason` VARCHAR(255) DEFAULT NULL COMMENT '取消原因',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
     UNIQUE INDEX `idx_order_no` (`order_no`),
     INDEX `idx_user_id` (`user_id`),
-    INDEX `idx_status` (`status`)
+    INDEX `idx_status` (`status`),
+    INDEX `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单表';
 ```
 
-### 2.4 订单明细表 (order_item)
+### 2.7 订单明细表 (order_item) - 禁止删除
 ```sql
 CREATE TABLE `order_item` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -119,9 +196,24 @@ CREATE TABLE `order_item` (
     `subtotal` DECIMAL(10, 2) NOT NULL COMMENT '小计金额',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (`id`),
-    INDEX `idx_order_id` (`order_id`)
+    INDEX `idx_order_id` (`order_id`),
+    INDEX `idx_goods_id` (`goods_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单明细表';
 ```
+
+---
+
+## 2.8 删除策略说明
+
+| 表名 | 删除策略 | 说明 |
+|------|----------|------|
+| **category** | 逻辑删除 | 分类可能被商品引用，保留历史数据 |
+| **goods** | 逻辑删除 | 商品被订单引用，物理删除会导致订单数据不完整 |
+| **user** | 逻辑删除 | 用户有历史订单，需保留数据用于售后、统计 |
+| **user_address** | 逻辑删除 | 地址可能被历史订单引用 |
+| **cart** | 物理删除 | 临时数据，可直接删除 |
+| **order** | 禁止删除 | 核心交易数据，只能取消/退款，不可删除 |
+| **order_item** | 禁止删除 | 跟随订单，订单不删则明细不删 |
 
 ---
 
