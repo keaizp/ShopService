@@ -104,6 +104,7 @@ CREATE TABLE `user` (
     `phone` VARCHAR(20) DEFAULT NULL COMMENT '手机号',
     `gender` TINYINT DEFAULT 0 COMMENT '性别：0-未知，1-男，2-女',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：0-禁用，1-正常',
+    `role` TINYINT NOT NULL DEFAULT 1 COMMENT '角色：1-普通用户，2-管理员',
     `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
     `last_login_time` DATETIME DEFAULT NULL COMMENT '最后登录时间',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

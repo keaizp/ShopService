@@ -68,14 +68,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             
             User user = this.getByOpenid(openid);
             if (user == null) {
-                log.info("新用户注册, openid: {}", openid);
-                user = new User();
-                user.setOpenid(openid);
-                user.setNickname("用户" + openid.substring(0, 8));
-                user.setStatus(1);
-                this.save(user);
-                log.info("新用户注册成功, ID: {}", user.getId());
-            } else {
+            log.info("新用户注册, openid: {}", openid);
+            user = new User();
+            user.setOpenid(openid);
+            user.setNickname("用户" + openid.substring(0, 8));
+            user.setStatus(1);
+            user.setRole(1); // 默认角色为普通用户
+            this.save(user);
+            log.info("新用户注册成功, ID: {}", user.getId());
+        } else {
                 log.info("用户登录, ID: {}", user.getId());
             }
             
@@ -153,6 +154,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                     user.setPhone(phoneNumber);
                     user.setNickname("用户" + phoneNumber.substring(7));
                     user.setStatus(1);
+                    user.setRole(1); // 默认角色为普通用户
                     this.save(user);
                     log.info("新用户注册成功, ID: {}", user.getId());
                 } else {
