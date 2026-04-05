@@ -29,6 +29,8 @@ public class User implements Serializable {
 
     private Integer status;
 
+    private Integer role; // 1: 普通用户, 2: 管理员
+
     @TableLogic
     @TableField(fill = FieldFill.INSERT)
     private Integer deleted;

@@ -3,6 +3,7 @@ package com.yamaha.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yamaha.common.PageDTO;
 import com.yamaha.common.Result;
+import com.yamaha.config.AdminRequired;
 import com.yamaha.entity.Goods;
 import com.yamaha.service.GoodsService;
 import com.yamaha.util.CosUtil;
@@ -46,22 +47,26 @@ public class GoodsController {
         return Result.success(goods);
     }
 
+    @AdminRequired
     @PostMapping
     public Result<Boolean> save(@RequestBody Goods goods) {
         return Result.success(goodsService.save(goods));
     }
 
+    @AdminRequired
     @PutMapping("/{id}")
     public Result<Boolean> update(@PathVariable Long id, @RequestBody Goods goods) {
         goods.setId(id);
         return Result.success(goodsService.updateById(goods));
     }
 
+    @AdminRequired
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(goodsService.removeById(id));
     }
 
+    @AdminRequired
     @PostMapping("/upload")
     public Result<String> upload(@RequestParam("file") MultipartFile file,
                                   @RequestParam("folder") String folder) {

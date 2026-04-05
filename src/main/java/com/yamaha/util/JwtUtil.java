@@ -22,13 +22,14 @@ public class JwtUtil {
     @Value("${jwt.expire}")
     private long expire;
 
-    public String generateToken(Long userId, String openid) {
+    public String generateToken(Long userId, String openid, Integer role) {
         Date now = new Date();
         Date expireDate = new Date(now.getTime() + expire * 1000);
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("openid", openid);
+        claims.put("role", role);
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -36,6 +37,10 @@ public class JwtUtil {
                 .setExpiration(expireDate)
                 .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
+    }
+
+    public String generateToken(Long userId, String openid) {
+        return generateToken(userId, openid, 1); // 默认角色为普通用户
     }
 
     public Claims getClaimsByToken(String token) {
@@ -67,6 +72,14 @@ public class JwtUtil {
             return null;
         }
         return claims.get("openid").toString();
+    }
+
+    public Integer getRoleFromToken(String token) {
+        Claims claims = getClaimsByToken(token);
+        if (claims == null) {
+            return null;
+        }
+        return Integer.valueOf(claims.get("role").toString());
     }
 
 

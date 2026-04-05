@@ -22,6 +22,12 @@ public class UserController {
         return Result.success(result);
     }
 
+    @PostMapping("/phoneLogin")
+    public Result<Map<String, Object>> phoneLogin(@RequestBody LoginDTO loginDTO) {
+        Map<String, Object> result = userService.phoneLogin(loginDTO.getCode(), loginDTO.getPhoneCode());
+        return Result.success(result);
+    }
+
     @GetMapping("/info")
     public Result<User> getInfo(@RequestParam("id") Long id) {
         User user = userService.getById(id);

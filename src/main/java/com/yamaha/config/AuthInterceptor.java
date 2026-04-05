@@ -22,7 +22,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         String token = request.getHeader("Authorization");
         if (token == null || token.isEmpty()) {
-            log.warn("请求缺少Authorization头");
+            log.warn("{} 请求缺少Authorization头", request.getRequestURI());
             ResponseUtil.writeJson(response, Result.error(401, "未授权，请先登录"));
             return false;
         }
@@ -38,8 +38,12 @@ public class AuthInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        // 将用户ID存储到请求中
+        // 获取用户角色
+        Integer role = jwtUtil.getRoleFromToken(token);
+
+        // 将用户ID和角色存储到请求中
         request.setAttribute("userId", userId);
+        request.setAttribute("role", role);
         return true;
     }
 }

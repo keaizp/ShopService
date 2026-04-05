@@ -11,6 +11,8 @@ public interface UserService extends IService<User> {
 
     Map<String, Object> login(String code);
 
+    Map<String, Object> phoneLogin(String code, String phoneCode);
+
     void updateLastLoginTime(Long userId);
 }
 
