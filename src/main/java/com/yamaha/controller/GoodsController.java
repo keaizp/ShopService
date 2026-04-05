@@ -1,5 +1,6 @@
 package com.yamaha.controller;
 
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yamaha.common.PageDTO;
 import com.yamaha.common.Result;
@@ -50,9 +51,10 @@ public class GoodsController {
 
     @AdminRequired
     @PostMapping(consumes = "multipart/form-data")
-    public Result<Boolean> save(@RequestPart("file") MultipartFile file,
-                               @RequestPart("goods") GoodsDTO goodsDTO) {
+    public Result<Boolean> save(@RequestParam("file") MultipartFile file,
+                               @RequestParam("goods") String goodsJson) {
         try {
+            GoodsDTO goodsDTO = JSONObject.parseObject(goodsJson, GoodsDTO.class);
             return Result.success(goodsService.saveGoods(goodsDTO, file));
         } catch (IOException e) {
             return Result.error("上传失败: " + e.getMessage());
@@ -64,9 +66,10 @@ public class GoodsController {
     @AdminRequired
     @PutMapping(value = "/{id}", consumes = "multipart/form-data")
     public Result<Boolean> update(@PathVariable Long id,
-                                 @RequestPart(value = "file", required = false) MultipartFile file,
-                                 @RequestPart("goods") GoodsDTO goodsDTO) {
+                                 @RequestParam(value = "file", required = false) MultipartFile file,
+                                 @RequestParam("goods") String goodsJson) {
         try {
+            GoodsDTO goodsDTO = JSONObject.parseObject(goodsJson, GoodsDTO.class);
             return Result.success(goodsService.updateGoods(id, goodsDTO, file));
         } catch (IOException e) {
             return Result.error("上传失败: " + e.getMessage());
