@@ -5,6 +5,7 @@ import com.yamaha.common.PageDTO;
 import com.yamaha.common.Result;
 import com.yamaha.config.AdminRequired;
 import com.yamaha.entity.Goods;
+import com.yamaha.dto.GoodsDTO;
 import com.yamaha.service.GoodsService;
 import com.yamaha.util.CosUtil;
 import lombok.RequiredArgsConstructor;
@@ -48,33 +49,35 @@ public class GoodsController {
     }
 
     @AdminRequired
-    @PostMapping
-    public Result<Boolean> save(@RequestBody Goods goods) {
-        return Result.success(goodsService.save(goods));
+    @PostMapping(consumes = "multipart/form-data")
+    public Result<Boolean> save(@RequestPart("file") MultipartFile file,
+                               @RequestPart("goods") GoodsDTO goodsDTO) {
+        try {
+            return Result.success(goodsService.saveGoods(goodsDTO, file));
+        } catch (IOException e) {
+            return Result.error("上传失败: " + e.getMessage());
+        } catch (Exception e) {
+            return Result.error("保存失败: " + e.getMessage());
+        }
     }
 
     @AdminRequired
-    @PutMapping("/{id}")
-    public Result<Boolean> update(@PathVariable Long id, @RequestBody Goods goods) {
-        goods.setId(id);
-        return Result.success(goodsService.updateById(goods));
+    @PutMapping(value = "/{id}", consumes = "multipart/form-data")
+    public Result<Boolean> update(@PathVariable Long id,
+                                 @RequestPart(value = "file", required = false) MultipartFile file,
+                                 @RequestPart("goods") GoodsDTO goodsDTO) {
+        try {
+            return Result.success(goodsService.updateGoods(id, goodsDTO, file));
+        } catch (IOException e) {
+            return Result.error("上传失败: " + e.getMessage());
+        } catch (Exception e) {
+            return Result.error("更新失败: " + e.getMessage());
+        }
     }
 
     @AdminRequired
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(goodsService.removeById(id));
-    }
-
-    @AdminRequired
-    @PostMapping("/upload")
-    public Result<String> upload(@RequestParam("file") MultipartFile file,
-                                  @RequestParam("folder") String folder) {
-        try {
-            String imagePath = cosUtil.uploadFile(file, folder);
-            return Result.success(imagePath);
-        } catch (IOException e) {
-            return Result.error("上传失败: " + e.getMessage());
-        }
     }
 }

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -19,7 +20,7 @@ public class Goods implements Serializable {
 
     private String name;
 
-    private Double price;
+    private BigDecimal price;
 
     private Integer stock;
 
