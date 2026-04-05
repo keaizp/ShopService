@@ -1,5 +1,6 @@
 package com.yamaha.service.impl;
 
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yamaha.entity.User;
@@ -48,16 +49,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         );
         
         try {
-            Map<String, Object> wxResponse = restTemplate.getForObject(url, Map.class);
-            log.info("微信API响应: {}", wxResponse);
+            // 先获取String响应
+            String responseStr = restTemplate.getForObject(url, String.class);
+            log.info("微信API响应: {}", responseStr);
             
-            if (wxResponse == null || wxResponse.containsKey("errcode")) {
-                String errMsg = wxResponse != null ? wxResponse.get("errmsg").toString() : "微信API调用失败";
+            // 解析为JSONObject
+            JSONObject wxResponse = JSONObject.parseObject(responseStr);
+            
+            if (wxResponse.containsKey("errcode")) {
+                String errMsg = wxResponse.getString("errmsg");
                 log.error("微信登录失败: {}", errMsg);
                 throw new RuntimeException("微信登录失败: " + errMsg);
             }
             
-            String openid = wxResponse.get("openid").toString();
+            String openid = wxResponse.getString("openid");
             log.info("获取到openid: {}", openid);
             
             User user = this.getByOpenid(openid);

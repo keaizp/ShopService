@@ -3,6 +3,8 @@ package com.yamaha.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yamaha.common.PageDTO;
 import com.yamaha.common.Result;
+import com.yamaha.dto.OrderCancelDTO;
+import com.yamaha.dto.OrderCreateDTO;
 import com.yamaha.entity.Order;
 import com.yamaha.entity.OrderItem;
 import com.yamaha.service.OrderService;
@@ -19,11 +21,13 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/create")
-    public Result<Order> create(@RequestParam("userId") Long userId,
-                              @RequestBody List<OrderItem> orderItems,
-                              @RequestParam("addressId") Long addressId,
-                              @RequestParam(value = "remark", required = false) String remark) {
-        Order order = orderService.createOrder(userId, orderItems, addressId, remark);
+    public Result<Order> create(@RequestBody OrderCreateDTO orderCreateDTO) {
+        Order order = orderService.createOrder(
+            orderCreateDTO.getUserId(),
+            orderCreateDTO.getOrderItems(),
+            orderCreateDTO.getAddressId(),
+            orderCreateDTO.getRemark()
+        );
         return Result.success(order);
     }
 
@@ -35,8 +39,8 @@ public class OrderController {
 
     @PutMapping("/{id}/cancel")
     public Result<Boolean> cancel(@PathVariable Long id,
-                                @RequestParam("cancelReason") String cancelReason) {
-        orderService.cancelOrder(id, cancelReason);
+                                @RequestBody OrderCancelDTO orderCancelDTO) {
+        orderService.cancelOrder(id, orderCancelDTO.getCancelReason());
         return Result.success(true);
     }
 

@@ -1,6 +1,7 @@
 package com.yamaha.controller;
 
 import com.yamaha.common.Result;
+import com.yamaha.dto.LoginDTO;
 import com.yamaha.entity.User;
 import com.yamaha.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +17,8 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/login")
-    public Result<Map<String, Object>> login(@RequestParam("code") String code) {
-        Map<String, Object> result = userService.login(code);
+    public Result<Map<String, Object>> login(@RequestBody LoginDTO loginDTO) {
+        Map<String, Object> result = userService.login(loginDTO.getCode());
         return Result.success(result);
     }
 
