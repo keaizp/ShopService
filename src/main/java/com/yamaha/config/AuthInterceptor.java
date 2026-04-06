@@ -31,6 +31,11 @@ public class AuthInterceptor implements HandlerInterceptor {
             token = token.substring(7);
         }
 
+        // 检查是否是管理员token，如果是则跳过用户鉴权
+        if (jwtUtil.isAdminToken(token)) {
+            return true;
+        }
+
         Long userId = jwtUtil.getUserIdFromToken(token);
         if (userId == null) {
             log.warn("无效的token");
@@ -38,12 +43,8 @@ public class AuthInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        // 获取用户角色
-        Integer role = jwtUtil.getRoleFromToken(token);
-
-        // 将用户ID和角色存储到请求中
+        // 将用户ID存储到请求中
         request.setAttribute("userId", userId);
-        request.setAttribute("role", role);
         return true;
     }
 }

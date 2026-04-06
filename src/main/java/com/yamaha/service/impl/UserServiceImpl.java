@@ -73,7 +73,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             user.setOpenid(openid);
             user.setNickname("用户" + openid.substring(0, 8));
             user.setStatus(1);
-            user.setRole(1); // 默认角色为普通用户
             this.save(user);
             log.info("新用户注册成功, ID: {}", user.getId());
         } else {
@@ -82,9 +81,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             
             this.updateLastLoginTime(user.getId());
             
-            // 生成token，包含角色信息
-            String token = jwtUtil.generateToken(user.getId(), user.getOpenid(), user.getRole());
-            log.info("生成token成功, 用户ID: {}, 角色: {}", user.getId(), user.getRole());
+            // 生成token
+            String token = jwtUtil.generateToken(user.getId(), user.getOpenid());
+            log.info("生成token成功, 用户ID: {}", user.getId());
             
             Map<String, Object> result = new HashMap<>();
             result.put("user", user);
@@ -154,7 +153,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                     user.setPhone(phoneNumber);
                     user.setNickname("用户" + phoneNumber.substring(7));
                     user.setStatus(1);
-                    user.setRole(1); // 默认角色为普通用户
                     this.save(user);
                     log.info("新用户注册成功, ID: {}", user.getId());
                 } else {
@@ -167,9 +165,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 }
                 this.updateLastLoginTime(user.getId());
 
-                // 生成token，包含角色信息
-                String token = jwtUtil.generateToken(user.getId(), user.getOpenid(), user.getRole());
-                log.info("生成token成功, 用户ID: {}, 角色: {}", user.getId(), user.getRole());
+                // 生成token
+                String token = jwtUtil.generateToken(user.getId(), user.getOpenid());
+                log.info("生成token成功, 用户ID: {}", user.getId());
 
                 Map<String, Object> result = new HashMap<>();
                 result.put("user", user);

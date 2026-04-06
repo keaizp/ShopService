@@ -7,25 +7,17 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("user")
-public class User implements Serializable {
+@TableName("admin")
+public class Admin implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    private String openid;
+    private String username;
 
-    private String unionid;
-
-    private String nickname;
-
-    private String avatar;
-
-    private String phone;
-
-    private Integer gender;
+    private String password;
 
     private Integer status;
 

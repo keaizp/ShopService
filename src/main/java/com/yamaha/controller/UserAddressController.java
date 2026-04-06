@@ -40,6 +40,10 @@ public class UserAddressController {
 
     @PutMapping("/{id}")
     public Result<Boolean> update(@PathVariable Long id, @RequestBody UserAddress address, @RequestAttribute("userId") Long userId) {
+        UserAddress existingAddress = userAddressService.getById(id);
+        if (existingAddress == null || !existingAddress.getUserId().equals(userId)) {
+            return Result.error("地址不存在或无权限");
+        }
         address.setId(id);
         address.setUserId(userId);
         return Result.success(userAddressService.updateById(address));

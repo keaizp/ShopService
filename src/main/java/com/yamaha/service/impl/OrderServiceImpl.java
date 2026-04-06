@@ -70,10 +70,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Override
     @Transactional
-    public void payOrder(Long orderId) {
-        log.info("支付订单, 订单ID: {}", orderId);
+    public void payOrder(Long orderId, Long userId) {
+        log.info("支付订单, 订单ID: {}, 用户ID: {}", orderId, userId);
         Order order = this.getById(orderId);
-        if (order != null && order.getStatus() == 0) {
+        if (order != null && order.getStatus() == 0 && order.getUserId().equals(userId)) {
             order.setStatus(1); // 已支付
             order.setPayType(1); // 微信支付
             order.setPayTime(LocalDateTime.now());
@@ -81,65 +81,77 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             this.updateById(order);
             log.info("订单支付成功, 订单编号: {}", order.getOrderNo());
         } else {
-            log.warn("订单支付失败, 订单ID: {}, 状态: {}", orderId, order != null ? order.getStatus() : "订单不存在");
+            log.warn("订单支付失败, 订单ID: {}, 用户ID: {}, 状态: {}", orderId, userId, order != null ? order.getStatus() : "订单不存在");
+            throw new RuntimeException("订单不存在或无权限操作");
         }
     }
 
     @Override
     @Transactional
-    public void cancelOrder(Long orderId, String cancelReason) {
-        log.info("取消订单, 订单ID: {}, 原因: {}", orderId, cancelReason);
+    public void cancelOrder(Long orderId, String cancelReason, Long userId) {
+        log.info("取消订单, 订单ID: {}, 原因: {}, 用户ID: {}", orderId, cancelReason, userId);
         Order order = this.getById(orderId);
-        if (order != null && order.getStatus() == 0) {
+        if (order != null && order.getStatus() == 0 && order.getUserId().equals(userId)) {
             order.setStatus(4); // 已取消
             order.setCancelReason(cancelReason);
             order.setUpdateTime(LocalDateTime.now());
             this.updateById(order);
             log.info("订单取消成功, 订单编号: {}", order.getOrderNo());
         } else {
-            log.warn("订单取消失败, 订单ID: {}, 状态: {}", orderId, order != null ? order.getStatus() : "订单不存在");
+            log.warn("订单取消失败, 订单ID: {}, 用户ID: {}, 状态: {}", orderId, userId, order != null ? order.getStatus() : "订单不存在");
+            throw new RuntimeException("订单不存在或无权限操作");
         }
     }
 
     @Override
     @Transactional
-    public void deliveryOrder(Long orderId) {
-        log.info("发货订单, 订单ID: {}", orderId);
+    public void deliveryOrder(Long orderId, Long userId) {
+        log.info("发货订单, 订单ID: {}, 用户ID: {}", orderId, userId);
         Order order = this.getById(orderId);
-        if (order != null && order.getStatus() == 1) {
+        if (order != null && order.getStatus() == 1 && order.getUserId().equals(userId)) {
             order.setStatus(2); // 已发货
             order.setDeliveryTime(LocalDateTime.now());
             order.setUpdateTime(LocalDateTime.now());
             this.updateById(order);
             log.info("订单发货成功, 订单编号: {}", order.getOrderNo());
         } else {
-            log.warn("订单发货失败, 订单ID: {}, 状态: {}", orderId, order != null ? order.getStatus() : "订单不存在");
+            log.warn("订单发货失败, 订单ID: {}, 用户ID: {}, 状态: {}", orderId, userId, order != null ? order.getStatus() : "订单不存在");
+            throw new RuntimeException("订单不存在或无权限操作");
         }
     }
 
     @Override
     @Transactional
-    public void receiveOrder(Long orderId) {
-        log.info("确认收货, 订单ID: {}", orderId);
+    public void receiveOrder(Long orderId, Long userId) {
+        log.info("确认收货, 订单ID: {}, 用户ID: {}", orderId, userId);
         Order order = this.getById(orderId);
-        if (order != null && order.getStatus() == 2) {
+        if (order != null && order.getStatus() == 2 && order.getUserId().equals(userId)) {
             order.setStatus(3); // 已完成
             order.setReceiveTime(LocalDateTime.now());
             order.setUpdateTime(LocalDateTime.now());
             this.updateById(order);
             log.info("订单收货成功, 订单编号: {}", order.getOrderNo());
         } else {
-            log.warn("订单收货失败, 订单ID: {}, 状态: {}", orderId, order != null ? order.getStatus() : "订单不存在");
+            log.warn("订单收货失败, 订单ID: {}, 用户ID: {}, 状态: {}", orderId, userId, order != null ? order.getStatus() : "订单不存在");
+            throw new RuntimeException("订单不存在或无权限操作");
         }
     }
 
     @Override
-    public Order getOrderDetail(Long orderId) {
-        return this.getById(orderId);
+    public Order getOrderDetail(Long orderId, Long userId) {
+        log.info("获取订单详情, 订单ID: {}, 用户ID: {}", orderId, userId);
+        Order order = this.getById(orderId);
+        if (order != null && order.getUserId().equals(userId)) {
+            return order;
+        } else {
+            log.warn("获取订单详情失败, 订单ID: {}, 用户ID: {}", orderId, userId);
+            throw new RuntimeException("订单不存在或无权限操作");
+        }
     }
 
     @Override
     public IPage<Order> getOrderPage(Long userId, Long pageNum, Long pageSize) {
+        log.info("获取用户订单列表, 用户ID: {}", userId);
         Page<Order> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Order::getUserId, userId)
@@ -148,10 +160,17 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
     @Override
-    public List<OrderItem> getOrderItemsByOrderId(Long orderId) {
-        LambdaQueryWrapper<OrderItem> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(OrderItem::getOrderId, orderId);
-        return orderItemMapper.selectList(wrapper);
+    public List<OrderItem> getOrderItemsByOrderId(Long orderId, Long userId) {
+        log.info("获取订单商品列表, 订单ID: {}, 用户ID: {}", orderId, userId);
+        Order order = this.getById(orderId);
+        if (order != null && order.getUserId().equals(userId)) {
+            LambdaQueryWrapper<OrderItem> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(OrderItem::getOrderId, orderId);
+            return orderItemMapper.selectList(wrapper);
+        } else {
+            log.warn("获取订单商品列表失败, 订单ID: {}, 用户ID: {}", orderId, userId);
+            throw new RuntimeException("订单不存在或无权限操作");
+        }
     }
 
     private String generateOrderNo() {

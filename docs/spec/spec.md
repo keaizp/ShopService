@@ -104,7 +104,6 @@ CREATE TABLE `user` (
     `phone` VARCHAR(20) DEFAULT NULL COMMENT '手机号',
     `gender` TINYINT DEFAULT 0 COMMENT '性别：0-未知，1-男，2-女',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：0-禁用，1-正常',
-    `role` TINYINT NOT NULL DEFAULT 1 COMMENT '角色：1-普通用户，2-管理员',
     `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
     `last_login_time` DATETIME DEFAULT NULL COMMENT '最后登录时间',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -117,7 +116,24 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
 ```
 
-### 2.4 用户地址表 (user_address) - 逻辑删除
+### 2.4 管理员表 (admin) - 逻辑删除
+```sql
+CREATE TABLE `admin` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `username` VARCHAR(50) NOT NULL COMMENT '管理员账号',
+    `password` VARCHAR(255) NOT NULL COMMENT '管理员密码',
+    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：0-禁用，1-正常',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
+    `last_login_time` DATETIME DEFAULT NULL COMMENT '最后登录时间',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE INDEX `idx_username` (`username`),
+    INDEX `idx_deleted` (`deleted`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='管理员表';
+```
+
+### 2.5 用户地址表 (user_address) - 逻辑删除
 ```sql
 CREATE TABLE `user_address` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -138,7 +154,7 @@ CREATE TABLE `user_address` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户地址表';
 ```
 
-### 2.5 购物车表 (cart) - 物理删除
+### 2.6 购物车表 (cart) - 物理删除
 ```sql
 CREATE TABLE `cart` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -154,7 +170,7 @@ CREATE TABLE `cart` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='购物车表';
 ```
 
-### 2.6 订单表 (order) - 禁止删除
+### 2.7 订单表 (order) - 禁止删除
 ```sql
 CREATE TABLE `order` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -184,7 +200,7 @@ CREATE TABLE `order` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单表';
 ```
 
-### 2.7 订单明细表 (order_item) - 禁止删除
+### 2.8 订单明细表 (order_item) - 禁止删除
 ```sql
 CREATE TABLE `order_item` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -204,13 +220,14 @@ CREATE TABLE `order_item` (
 
 ---
 
-## 2.8 删除策略说明
+## 2.9 删除策略说明
 
 | 表名 | 删除策略 | 说明 |
 |------|----------|------|
 | **category** | 逻辑删除 | 分类可能被商品引用，保留历史数据 |
 | **goods** | 逻辑删除 | 商品被订单引用，物理删除会导致订单数据不完整 |
 | **user** | 逻辑删除 | 用户有历史订单，需保留数据用于售后、统计 |
+| **admin** | 逻辑删除 | 管理员账号信息需要保留 |
 | **user_address** | 逻辑删除 | 地址可能被历史订单引用 |
 | **cart** | 物理删除 | 临时数据，可直接删除 |
 | **order** | 禁止删除 | 核心交易数据，只能取消/退款，不可删除 |
@@ -280,7 +297,13 @@ CREATE TABLE `order_item` (
 | `/api/user/info` | GET | 获取用户信息 |
 | `/api/user/update` | PUT | 更新用户信息 |
 
-### 3.5 订单接口
+### 3.5 管理员接口
+
+| 接口路径 | 请求方式 | 说明 |
+|----------|----------|------|
+| `/api/admin/login` | POST | 管理员账号密码登录 |
+
+### 3.6 订单接口
 
 | 接口路径 | 请求方式 | 说明 |
 |----------|----------|------|

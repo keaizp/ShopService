@@ -22,14 +22,14 @@ public class JwtUtil {
     @Value("${jwt.expire}")
     private long expire;
 
-    public String generateToken(Long userId, String openid, Integer role) {
+    public String generateToken(Long userId, String openid) {
         Date now = new Date();
         Date expireDate = new Date(now.getTime() + expire * 1000);
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("openid", openid);
-        claims.put("role", role);
+        claims.put("type", "user");
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -37,10 +37,6 @@ public class JwtUtil {
                 .setExpiration(expireDate)
                 .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
-    }
-
-    public String generateToken(Long userId, String openid) {
-        return generateToken(userId, openid, 1); // 默认角色为普通用户
     }
 
     public Claims getClaimsByToken(String token) {
@@ -74,14 +70,54 @@ public class JwtUtil {
         return claims.get("openid").toString();
     }
 
-    public Integer getRoleFromToken(String token) {
+    public boolean isUserToken(String token) {
+        Claims claims = getClaimsByToken(token);
+        if (claims == null) {
+            return false;
+        }
+        return "user".equals(claims.get("type"));
+    }
+
+    public String generateAdminToken(Long adminId, String username) {
+        Date now = new Date();
+        Date expireDate = new Date(now.getTime() + expire * 1000);
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("adminId", adminId);
+        claims.put("username", username);
+        claims.put("type", "admin");
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(expireDate)
+                .signWith(SignatureAlgorithm.HS256, secret)
+                .compact();
+    }
+
+    public Long getAdminIdFromToken(String token) {
         Claims claims = getClaimsByToken(token);
         if (claims == null) {
             return null;
         }
-        return Integer.valueOf(claims.get("role").toString());
+        return Long.valueOf(claims.get("adminId").toString());
     }
 
+    public String getUsernameFromToken(String token) {
+        Claims claims = getClaimsByToken(token);
+        if (claims == null) {
+            return null;
+        }
+        return claims.get("username").toString();
+    }
+
+    public boolean isAdminToken(String token) {
+        Claims claims = getClaimsByToken(token);
+        if (claims == null) {
+            return false;
+        }
+        return "admin".equals(claims.get("type"));
+    }
 
     public static String generateSecret() {
         try {
