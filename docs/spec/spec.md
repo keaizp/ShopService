@@ -74,18 +74,24 @@ CREATE TABLE `category` (
 CREATE TABLE `goods` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `category_id` BIGINT DEFAULT NULL COMMENT '分类ID',
+    `brand_id` BIGINT DEFAULT NULL COMMENT '品牌ID',
     `name` VARCHAR(255) NOT NULL COMMENT '商品名称',
+    `subtitle` VARCHAR(500) DEFAULT NULL COMMENT '商品副标题',
     `price` DECIMAL(10, 2) NOT NULL DEFAULT 0.00 COMMENT '商品价格',
     `stock` INT NOT NULL DEFAULT 0 COMMENT '库存数量',
-    `image` VARCHAR(500) DEFAULT NULL COMMENT '商品图片路径',
+    `main_image` VARCHAR(500) DEFAULT NULL COMMENT '主图片路径',
     `description` TEXT DEFAULT NULL COMMENT '商品描述',
+    `detail` TEXT DEFAULT NULL COMMENT '商品详情',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：0-下架，1-上架',
     `sort_order` INT NOT NULL DEFAULT 0 COMMENT '排序权重',
+    `view_count` INT NOT NULL DEFAULT 0 COMMENT '浏览次数',
+    `sales_count` INT NOT NULL DEFAULT 0 COMMENT '销售次数',
     `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
     INDEX `idx_category_id` (`category_id`),
+    INDEX `idx_brand_id` (`brand_id`),
     INDEX `idx_name` (`name`),
     INDEX `idx_status` (`status`),
     INDEX `idx_deleted` (`deleted`),
@@ -93,7 +99,42 @@ CREATE TABLE `goods` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品表';
 ```
 
-### 2.3 用户表 (user) - 逻辑删除
+### 2.3 商品图片表 (goods_image) - 逻辑删除
+```sql
+CREATE TABLE `goods_image` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `goods_id` BIGINT NOT NULL COMMENT '商品ID',
+    `image_url` VARCHAR(500) NOT NULL COMMENT '图片路径',
+    `sort_order` INT NOT NULL DEFAULT 0 COMMENT '排序权重',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    INDEX `idx_goods_id` (`goods_id`),
+    INDEX `idx_deleted` (`deleted`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品图片表';
+```
+
+### 2.4 商品参数表 (goods_param) - 逻辑删除
+```sql
+CREATE TABLE `goods_param` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `goods_id` BIGINT NOT NULL COMMENT '商品ID',
+    `param_name` VARCHAR(100) NOT NULL COMMENT '参数名称',
+    `param_value` VARCHAR(500) NOT NULL COMMENT '参数值',
+    `sort_order` INT NOT NULL DEFAULT 0 COMMENT '排序权重',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    INDEX `idx_goods_id` (`goods_id`),
+    INDEX `idx_deleted` (`deleted`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品参数表';
+```
+
+
+
+### 2.6 用户表 (user) - 逻辑删除
 ```sql
 CREATE TABLE `user` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -116,7 +157,7 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
 ```
 
-### 2.4 管理员表 (admin) - 逻辑删除
+### 2.7 管理员表 (admin) - 逻辑删除
 ```sql
 CREATE TABLE `admin` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -133,7 +174,7 @@ CREATE TABLE `admin` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='管理员表';
 ```
 
-### 2.5 用户地址表 (user_address) - 逻辑删除
+### 2.8 用户地址表 (user_address) - 逻辑删除
 ```sql
 CREATE TABLE `user_address` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -154,7 +195,7 @@ CREATE TABLE `user_address` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户地址表';
 ```
 
-### 2.6 购物车表 (cart) - 物理删除
+### 2.9 购物车表 (cart) - 物理删除
 ```sql
 CREATE TABLE `cart` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -170,7 +211,7 @@ CREATE TABLE `cart` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='购物车表';
 ```
 
-### 2.7 订单表 (order) - 禁止删除
+### 2.10 订单表 (order) - 禁止删除
 ```sql
 CREATE TABLE `order` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -200,7 +241,7 @@ CREATE TABLE `order` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单表';
 ```
 
-### 2.8 订单明细表 (order_item) - 禁止删除
+### 2.11 订单明细表 (order_item) - 禁止删除
 ```sql
 CREATE TABLE `order_item` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -220,12 +261,15 @@ CREATE TABLE `order_item` (
 
 ---
 
-## 2.9 删除策略说明
+## 2.12 删除策略说明
 
 | 表名 | 删除策略 | 说明 |
 |------|----------|------|
 | **category** | 逻辑删除 | 分类可能被商品引用，保留历史数据 |
 | **goods** | 逻辑删除 | 商品被订单引用，物理删除会导致订单数据不完整 |
+| **goods_image** | 逻辑删除 | 图片信息与商品关联，保留历史数据 |
+| **goods_param** | 逻辑删除 | 参数信息与商品关联，保留历史数据 |
+| **brand** | 逻辑删除 | 品牌可能被商品引用，保留历史数据 |
 | **user** | 逻辑删除 | 用户有历史订单，需保留数据用于售后、统计 |
 | **admin** | 逻辑删除 | 管理员账号信息需要保留 |
 | **user_address** | 逻辑删除 | 地址可能被历史订单引用 |
@@ -282,14 +326,59 @@ CREATE TABLE `order_item` (
 | `/api/goods/{id}` | PUT | 修改商品 |
 | `/api/goods/{id}` | DELETE | 删除商品 |
 | `/api/goods/upload` | POST | 上传商品图片 |
+| `/api/goods/{id}/images` | GET | 获取商品图片列表 |
+| `/api/goods/{id}/params` | GET | 获取商品参数列表 |
 
 **分页查询参数**：
 | 参数名 | 类型 | 必填 | 默认值 | 说明 |
 |--------|------|------|--------|------|
 | pageNum | Long | 否 | 1 | 页码 |
 | pageSize | Long | 否 | 10 | 每页条数 |
+| categoryId | Long | 否 | - | 分类ID |
+| brandId | Long | 否 | - | 品牌ID |
+| keyword | String | 否 | - | 关键词 |
 
-### 3.4 用户接口
+### 3.4 商品图片接口
+
+| 接口路径 | 请求方式 | 说明 |
+|----------|----------|------|
+| `/api/goods-images` | POST | 新增商品图片 |
+| `/api/goods-images/{id}` | PUT | 修改商品图片 |
+| `/api/goods-images/{id}` | DELETE | 删除商品图片 |
+
+### 3.5 商品参数接口
+
+| 接口路径 | 请求方式 | 说明 |
+|----------|----------|------|
+| `/api/goods-params` | POST | 新增商品参数 |
+| `/api/goods-params/{id}` | PUT | 修改商品参数 |
+| `/api/goods-params/{id}` | DELETE | 删除商品参数 |
+
+### 3.6 品牌接口
+
+| 接口路径 | 请求方式 | 说明 |
+|----------|----------|------|
+| `/api/brands/page` | GET | 分页查询品牌列表 |
+| `/api/brands/list` | GET | 查询所有品牌 |
+| `/api/brands/{id}` | GET | 根据ID查询品牌详情 |
+| `/api/brands` | POST | 新增品牌 |
+| `/api/brands/{id}` | PUT | 修改品牌 |
+| `/api/brands/{id}` | DELETE | 删除品牌 |
+| `/api/brands/upload` | POST | 上传品牌Logo |
+
+### 3.7 分类接口
+
+| 接口路径 | 请求方式 | 说明 |
+|----------|----------|------|
+| `/api/categories/page` | GET | 分页查询分类列表 |
+| `/api/categories/list` | GET | 查询所有分类 |
+| `/api/categories/{id}` | GET | 根据ID查询分类详情 |
+| `/api/categories` | POST | 新增分类 |
+| `/api/categories/{id}` | PUT | 修改分类 |
+| `/api/categories/{id}` | DELETE | 删除分类 |
+| `/api/categories/tree` | GET | 获取分类树形结构 |
+
+### 3.7 用户接口
 
 | 接口路径 | 请求方式 | 说明 |
 |----------|----------|------|
@@ -297,13 +386,13 @@ CREATE TABLE `order_item` (
 | `/api/user/info` | GET | 获取用户信息 |
 | `/api/user/update` | PUT | 更新用户信息 |
 
-### 3.5 管理员接口
+### 3.8 管理员接口
 
 | 接口路径 | 请求方式 | 说明 |
 |----------|----------|------|
 | `/api/admin/login` | POST | 管理员账号密码登录 |
 
-### 3.6 订单接口
+### 3.9 订单接口
 
 | 接口路径 | 请求方式 | 说明 |
 |----------|----------|------|

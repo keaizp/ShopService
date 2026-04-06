@@ -17,11 +17,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
         // 先执行认证拦截器
         registry.addInterceptor(authInterceptor)
                 .addPathPatterns("/**")
-                .excludePathPatterns("/user/login","/user/phoneLogin", "/goods/page", "/goods/{id}", "/error");
+                .excludePathPatterns("/admin/login", "/user/login","/user/phoneLogin", "/goods/page", "/goods/{id}", "/error");
         
         // 再执行管理员权限拦截器
         registry.addInterceptor(adminInterceptor)
                 .addPathPatterns("/**")
-                .excludePathPatterns("/user/login","/user/phoneLogin", "/goods/page", "/goods/{id}", "/error");
+                .excludePathPatterns("/admin/login", "/user/login","/user/phoneLogin", "/goods/page", "/goods/{id}", "/error");
     }
 }

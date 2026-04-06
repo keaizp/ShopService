@@ -24,4 +24,8 @@ public class PasswordUtil {
     public static boolean matches(String rawPassword, String encodedPassword) {
         return encoder.matches(rawPassword, encodedPassword);
     }
+
+    public static void main(String[] args) {
+        System.out.printf("%s\n", encode("admin123"));
+    }
 }
