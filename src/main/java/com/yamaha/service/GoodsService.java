@@ -11,6 +11,7 @@ import java.io.IOException;
 public interface GoodsService extends IService<Goods> {
 
     IPage<Goods> pageGoods(Long pageNum, Long pageSize);
+    Goods saveGoods(GoodsDTO goodsDTO);
     boolean saveGoods(GoodsDTO goodsDTO, MultipartFile file) throws IOException;
     boolean updateGoods(Long id, GoodsDTO goodsDTO, MultipartFile file) throws IOException;
 }

@@ -11,9 +11,9 @@ import java.util.Map;
 public interface CategoryService extends IService<Category> {
     PageResult<Category> page(PageDTO pageDTO);
     List<Category> listAll();
-    Category getById(Integer id);
+    Category getById(Long id);
     boolean save(Category category);
     boolean updateById(Category category);
-    boolean removeById(Integer id);
+    boolean removeById(Long id);
     List<Map<String, Object>> tree();
 }

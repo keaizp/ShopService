@@ -30,6 +30,10 @@ public class SecurityConfig {
                 .requestMatchers("/user/login", "/user/phoneLogin").permitAll()
                 // 允许商品相关接口
                 .requestMatchers("/goods/**").permitAll()
+                // 允许分类相关接口
+                .requestMatchers("/categories/**").permitAll()
+                // 允许上传相关接口
+                .requestMatchers("/upload/**").permitAll()
                 // 其他接口需要认证
                 .anyRequest().authenticated()
             );

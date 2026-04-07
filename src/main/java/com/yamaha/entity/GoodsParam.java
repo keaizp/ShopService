@@ -8,14 +8,14 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("category")
-public class Category {
+@TableName("goods_param")
+public class GoodsParam {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private String name;
-    private Long parentId;
-    private Integer level;
-    private Integer status;
+    private Long goodsId;
+    @TableField("param_name")
+    private String paramName;
+    private String paramValue;
     @TableField("sort_order")
     private Integer sortOrder;
     private Integer deleted;

@@ -43,6 +43,21 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
     }
 
     @Override
+    public Goods saveGoods(GoodsDTO goodsDTO) {
+        log.info("保存商品: {}", goodsDTO.getName());
+        // 创建商品
+        Goods goods = new Goods();
+        goods.setName(goodsDTO.getName());
+        goods.setCategoryId(goodsDTO.getCategoryId());
+        goods.setPrice(goodsDTO.getPrice());
+        goods.setStock(goodsDTO.getStock());
+        goods.setDescription(goodsDTO.getDescription());
+        
+        this.save(goods);
+        return goods;
+    }
+
+    @Override
     public boolean saveGoods(GoodsDTO goodsDTO, MultipartFile file) throws IOException {
         log.info("保存商品: {}", goodsDTO.getName());
         // 上传图片
@@ -51,6 +66,7 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
         // 创建商品
         Goods goods = new Goods();
         goods.setName(goodsDTO.getName());
+        goods.setCategoryId(goodsDTO.getCategoryId());
         goods.setPrice(goodsDTO.getPrice());
         goods.setStock(goodsDTO.getStock());
         goods.setDescription(goodsDTO.getDescription());

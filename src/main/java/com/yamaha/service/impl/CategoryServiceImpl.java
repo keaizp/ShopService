@@ -22,7 +22,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
     @Override
     public PageResult<Category> page(PageDTO pageDTO) {
-        IPage<Category> page = new Page<>(pageDTO.getPage(), pageDTO.getSize());
+        IPage<Category> page = new Page<>(pageDTO.getPageNum(), pageDTO.getPageSize());
         QueryWrapper<Category> wrapper = new QueryWrapper<>();
         wrapper.eq("deleted", 0);
         wrapper.orderByAsc("parent_id").orderByAsc("id");
@@ -39,7 +39,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     }
 
     @Override
-    public Category getById(Integer id) {
+    public Category getById(Long id) {
         return baseMapper.selectById(id);
     }
 
@@ -59,7 +59,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     }
 
     @Override
-    public boolean removeById(Integer id) {
+    public boolean removeById(Long id) {
         Category category = new Category();
         category.setId(id);
         category.setDeleted(1);
@@ -71,7 +71,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     public List<Map<String, Object>> tree() {
         List<Category> categories = listAll();
         List<Map<String, Object>> result = new ArrayList<>();
-        Map<Integer, Map<String, Object>> map = new HashMap<>();
+        Map<Long, Map<String, Object>> map = new HashMap<>();
 
         // 构建所有分类的Map
         for (Category category : categories) {

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 public class GoodsDTO {
     private String name;
+    private Long categoryId;
     private BigDecimal price;
     private Integer stock;
     private String description;
@@ -15,6 +16,14 @@ public class GoodsDTO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
 
     public BigDecimal getPrice() {

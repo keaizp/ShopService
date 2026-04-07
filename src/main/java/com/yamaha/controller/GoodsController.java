@@ -50,14 +50,11 @@ public class GoodsController {
     }
 
     @AdminRequired
-    @PostMapping(consumes = "multipart/form-data")
-    public Result<Boolean> save(@RequestParam("file") MultipartFile file,
-                               @RequestParam("goods") String goodsJson) {
+    @PostMapping
+    public Result<Goods> save(@RequestBody GoodsDTO goodsDTO) {
         try {
-            GoodsDTO goodsDTO = JSONObject.parseObject(goodsJson, GoodsDTO.class);
-            return Result.success(goodsService.saveGoods(goodsDTO, file));
-        } catch (IOException e) {
-            return Result.error("上传失败: " + e.getMessage());
+            Goods goods = goodsService.saveGoods(goodsDTO);
+            return Result.success(goods);
         } catch (Exception e) {
             return Result.error("保存失败: " + e.getMessage());
         }

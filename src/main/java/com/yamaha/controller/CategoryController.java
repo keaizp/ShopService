@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/categories")
+@RequestMapping("/categories")
 @RequiredArgsConstructor
 public class CategoryController {
 
@@ -38,7 +38,7 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
-    public Result<Boolean> updateById(@PathVariable Integer id, @RequestBody Category category) {
+    public Result<Boolean> updateById(@PathVariable Long id, @RequestBody Category category) {
         category.setId(id);
         return Result.success(categoryService.updateById(category));
     }
