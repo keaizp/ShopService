@@ -52,6 +52,8 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
         goods.setPrice(goodsDTO.getPrice());
         goods.setStock(goodsDTO.getStock());
         goods.setDescription(goodsDTO.getDescription());
+        goods.setStatus(1);
+        goods.setSortOrder(0);
         if (goodsDTO.getImage() != null && !goodsDTO.getImage().isEmpty()) {
             goods.setImage(goodsDTO.getImage());
         }
@@ -65,7 +67,7 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
         log.info("保存商品: {}", goodsDTO.getName());
         // 上传图片
         String imagePath = cosUtil.uploadFile(file, "goods");
-        
+
         // 创建商品
         Goods goods = new Goods();
         goods.setName(goodsDTO.getName());
@@ -74,7 +76,9 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
         goods.setStock(goodsDTO.getStock());
         goods.setDescription(goodsDTO.getDescription());
         goods.setImage(imagePath);
-        
+        goods.setStatus(1);
+        goods.setSortOrder(0);
+
         return this.save(goods);
     }
 

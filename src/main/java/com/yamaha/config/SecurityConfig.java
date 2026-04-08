@@ -26,8 +26,12 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 允许管理员登录接口
                 .requestMatchers("/admin/login").permitAll()
-                // 允许用户登录接口
-                .requestMatchers("/user/login", "/user/phoneLogin").permitAll()
+                // 允许用户相关接口（鉴权由 AuthInterceptor 处理）
+                .requestMatchers("/user/**").permitAll()
+                // 允许用户地址接口
+                .requestMatchers("/userAddress/**").permitAll()
+                // 允许购物车接口（鉴权由 AuthInterceptor 处理）
+                .requestMatchers("/cart/**").permitAll()
                 // 允许商品相关接口
                 .requestMatchers("/goods/**").permitAll()
                 // 允许分类相关接口

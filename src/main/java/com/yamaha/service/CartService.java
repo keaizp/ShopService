@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface CartService extends IService<Cart> {
 
-    void addToCart(Long userId, Long goodsId, Integer quantity);
+    void addToCart(Long userId, Long goodsId, Long skuId, Integer quantity);
 
     void updateQuantity(Long id, Integer quantity);
 
@@ -17,5 +17,5 @@ public interface CartService extends IService<Cart> {
 
     List<Cart> getByUserId(Long userId);
 
-    Cart getByUserIdAndGoodsId(Long userId, Long goodsId);
+    Cart getByUserIdAndGoodsIdAndSkuId(Long userId, Long goodsId, Long skuId);
 }

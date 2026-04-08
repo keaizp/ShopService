@@ -22,6 +22,10 @@ public class OrderItem implements Serializable {
 
     private Long goodsId;
 
+    private Long skuId;
+
+    private String specInfo;
+
     private String goodsName;
 
     private String goodsImage;

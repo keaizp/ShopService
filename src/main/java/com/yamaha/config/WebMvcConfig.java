@@ -32,6 +32,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/goods/list", "/goods/page", "/goods/{id}",
                         "/goods/images/goods/{goodsId}",
                         "/goods/params/goods/{goodsId}",
+                        "/goods/specs/{goodsId}",
+                        "/goods/skus/{goodsId}",
                         "/categories/list",
                         "/error"
                 );
@@ -44,6 +46,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/goods/list", "/goods/page", "/goods/{id}",
                         "/goods/images/goods/{goodsId}",
                         "/goods/params/goods/{goodsId}",
+                        "/goods/specs/{goodsId}",
+                        "/goods/skus/{goodsId}",
                         "/categories/list",
                         "/error"
                 );

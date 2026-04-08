@@ -27,10 +27,12 @@
 
 ### 2.1 表结构检查
 - [ ] goods表结构正确
+- [ ] goods_spec表结构正确
+- [ ] goods_sku表结构正确
 - [ ] user表结构正确
-- [ ] cart表结构正确
+- [ ] cart表结构正确（含sku_id字段）
 - [ ] order表结构正确
-- [ ] order_item表结构正确
+- [ ] order_item表结构正确（含sku_id、spec_info字段）
 
 ### 2.2 索引检查
 - [ ] 主键索引
@@ -82,11 +84,25 @@
 |------|--------|------|
 | POST /api/cart/add | 商品存在校验 | ⬜ |
 | | 库存校验 | ⬜ |
-| | 重复添加合并数量 | ⬜ |
+| | 重复添加合并数量（同goodsId+skuId） | ⬜ |
+| | 支持传入skuId | ⬜ |
 | PUT /api/cart/{id} | 数量更新 | ⬜ |
 | DELETE /api/cart/{id} | 删除成功 | ⬜ |
 | GET /api/cart/list | 返回当前用户数据 | ⬜ |
 | | 包含商品信息 | ⬜ |
+| | 包含SKU规格信息和价格 | ⬜ |
+
+### 3.4 商品规格/SKU接口
+| 接口 | 检查项 | 状态 |
+|------|--------|------|
+| GET /api/goods/specs/{goodsId} | 返回规格属性列表 | ⬜ |
+| | values字段为JSON数组 | ⬜ |
+| POST /api/goods/specs/{goodsId} | 先删后插 | ⬜ |
+| | 需要管理员权限 | ⬜ |
+| GET /api/goods/skus/{goodsId} | 返回SKU列表 | ⬜ |
+| | 包含价格、库存、规格组合 | ⬜ |
+| POST /api/goods/skus/{goodsId} | 先删后插 | ⬜ |
+| | 需要管理员权限 | ⬜ |
 
 ### 3.4 订单接口
 | 接口 | 检查项 | 状态 |

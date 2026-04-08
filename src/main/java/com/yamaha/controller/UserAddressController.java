@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/user/address")
+@RequestMapping("/userAddress")
 @RequiredArgsConstructor
 public class UserAddressController {
 

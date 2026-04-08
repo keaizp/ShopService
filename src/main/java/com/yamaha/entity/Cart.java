@@ -21,6 +21,8 @@ public class Cart implements Serializable {
 
     private Long goodsId;
 
+    private Long skuId;
+
     private Integer quantity;
 
     private Integer selected;

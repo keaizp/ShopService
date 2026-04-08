@@ -29,18 +29,50 @@ com.yamaha/
 │   └── PageResult.java  # 分页响应封装
 ├── config/              # 配置模块
 │   ├── MyBatisPlusConfig.java
-│   └── CosConfig.java
+│   ├── CosConfig.java
+│   ├── SecurityConfig.java
+│   ├── WebMvcConfig.java
+│   ├── AuthInterceptor.java
+│   └── AdminInterceptor.java
 ├── controller/          # 控制器层
 │   ├── GoodsController.java
-│   └── UserController.java
+│   ├── GoodsSkuController.java
+│   ├── CartController.java
+│   ├── UserController.java
+│   └── UserAddressController.java
+├── dto/                 # 数据传输对象
+│   ├── GoodsDTO.java
+│   ├── CartAddDTO.java
+│   └── CartUpdateDTO.java
 ├── entity/              # 实体层
 │   ├── Goods.java
-│   └── User.java
+│   ├── GoodsImage.java
+│   ├── GoodsParam.java
+│   ├── GoodsSpec.java
+│   ├── GoodsSku.java
+│   ├── Cart.java
+│   ├── Order.java
+│   ├── OrderItem.java
+│   ├── User.java
+│   ├── UserAddress.java
+│   └── Category.java
 ├── mapper/              # 数据访问层
 │   ├── GoodsMapper.java
-│   └── UserMapper.java
+│   ├── GoodsImageMapper.java
+│   ├── GoodsParamMapper.java
+│   ├── GoodsSpecMapper.java
+│   ├── GoodsSkuMapper.java
+│   ├── CartMapper.java
+│   ├── OrderMapper.java
+│   ├── OrderItemMapper.java
+│   ├── UserMapper.java
+│   ├── UserAddressMapper.java
+│   └── CategoryMapper.java
 ├── service/             # 业务逻辑层
 │   ├── GoodsService.java
+│   ├── GoodsSpecService.java
+│   ├── GoodsSkuService.java
+│   ├── CartService.java
 │   └── UserService.java
 └── util/                # 工具类
     └── CosUtil.java
@@ -132,9 +164,45 @@ CREATE TABLE `goods_param` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品参数表';
 ```
 
+### 2.5 商品规格属性表 (goods_spec) - 逻辑删除
+```sql
+CREATE TABLE `goods_spec` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `goods_id` BIGINT NOT NULL COMMENT '商品ID',
+    `name` VARCHAR(50) NOT NULL COMMENT '规格名称，如颜色、尺寸',
+    `values` VARCHAR(500) NOT NULL COMMENT '规格值列表，JSON数组，如["黑色","白色"]',
+    `sort_order` INT NOT NULL DEFAULT 0 COMMENT '排序权重',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    INDEX `idx_goods_id` (`goods_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品规格属性表';
+```
+
+### 2.6 商品SKU表 (goods_sku) - 逻辑删除
+```sql
+CREATE TABLE `goods_sku` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `goods_id` BIGINT NOT NULL COMMENT '商品ID',
+    `spec_values` VARCHAR(500) NOT NULL COMMENT '规格组合JSON，如{"颜色":"黑色","尺寸":"S"}',
+    `price` DECIMAL(10,2) NOT NULL COMMENT 'SKU价格',
+    `stock` INT NOT NULL DEFAULT 0 COMMENT 'SKU库存',
+    `image` VARCHAR(255) DEFAULT NULL COMMENT 'SKU独立图片（COS路径，可选）',
+    `sku_code` VARCHAR(100) DEFAULT NULL COMMENT 'SKU编码（可选）',
+    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：0-下架，1-上架',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    INDEX `idx_goods_id` (`goods_id`),
+    INDEX `idx_sku_code` (`sku_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品SKU表';
+```
 
 
-### 2.6 用户表 (user) - 逻辑删除
+
+### 2.7 用户表 (user) - 逻辑删除
 ```sql
 CREATE TABLE `user` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -157,7 +225,7 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
 ```
 
-### 2.7 管理员表 (admin) - 逻辑删除
+### 2.8 管理员表 (admin) - 逻辑删除
 ```sql
 CREATE TABLE `admin` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -174,7 +242,7 @@ CREATE TABLE `admin` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='管理员表';
 ```
 
-### 2.8 用户地址表 (user_address) - 逻辑删除
+### 2.9 用户地址表 (user_address) - 逻辑删除
 ```sql
 CREATE TABLE `user_address` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -195,23 +263,23 @@ CREATE TABLE `user_address` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户地址表';
 ```
 
-### 2.9 购物车表 (cart) - 物理删除
+### 2.10 购物车表 (cart) - 物理删除
 ```sql
 CREATE TABLE `cart` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `user_id` BIGINT NOT NULL COMMENT '用户ID',
     `goods_id` BIGINT NOT NULL COMMENT '商品ID',
+    `sku_id` BIGINT DEFAULT NULL COMMENT '关联SKU ID',
     `quantity` INT NOT NULL DEFAULT 1 COMMENT '购买数量',
     `selected` TINYINT NOT NULL DEFAULT 1 COMMENT '是否选中：0-未选中，1-已选中',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    UNIQUE INDEX `idx_user_goods` (`user_id`, `goods_id`),
     INDEX `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='购物车表';
 ```
 
-### 2.10 订单表 (order) - 禁止删除
+### 2.11 订单表 (order) - 禁止删除
 ```sql
 CREATE TABLE `order` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -241,12 +309,14 @@ CREATE TABLE `order` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单表';
 ```
 
-### 2.11 订单明细表 (order_item) - 禁止删除
+### 2.12 订单明细表 (order_item) - 禁止删除
 ```sql
 CREATE TABLE `order_item` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `order_id` BIGINT NOT NULL COMMENT '订单ID',
     `goods_id` BIGINT NOT NULL COMMENT '商品ID',
+    `sku_id` BIGINT DEFAULT NULL COMMENT '关联SKU ID',
+    `spec_info` VARCHAR(255) DEFAULT NULL COMMENT '规格快照，如"黑色 / S"',
     `goods_name` VARCHAR(255) NOT NULL COMMENT '商品名称（冗余）',
     `goods_image` VARCHAR(500) DEFAULT NULL COMMENT '商品图片（冗余）',
     `price` DECIMAL(10, 2) NOT NULL COMMENT '商品单价',
@@ -261,7 +331,7 @@ CREATE TABLE `order_item` (
 
 ---
 
-## 2.12 删除策略说明
+## 2.13 删除策略说明
 
 | 表名 | 删除策略 | 说明 |
 |------|----------|------|
@@ -269,6 +339,8 @@ CREATE TABLE `order_item` (
 | **goods** | 逻辑删除 | 商品被订单引用，物理删除会导致订单数据不完整 |
 | **goods_image** | 逻辑删除 | 图片信息与商品关联，保留历史数据 |
 | **goods_param** | 逻辑删除 | 参数信息与商品关联，保留历史数据 |
+| **goods_spec** | 逻辑删除 | 规格属性与商品关联，保留历史数据 |
+| **goods_sku** | 逻辑删除 | SKU被订单引用，保留历史数据 |
 | **brand** | 逻辑删除 | 品牌可能被商品引用，保留历史数据 |
 | **user** | 逻辑删除 | 用户有历史订单，需保留数据用于售后、统计 |
 | **admin** | 逻辑删除 | 管理员账号信息需要保留 |
@@ -338,7 +410,16 @@ CREATE TABLE `order_item` (
 | brandId | Long | 否 | - | 品牌ID |
 | keyword | String | 否 | - | 关键词 |
 
-### 3.4 商品图片接口
+### 3.4 商品规格/SKU接口
+
+| 接口路径 | 请求方式 | 说明 |
+|----------|----------|------|
+| `/api/goods/specs/{goodsId}` | GET | 获取商品规格属性列表 |
+| `/api/goods/specs/{goodsId}` | POST | 批量保存商品规格属性（先删后插，需管理员权限） |
+| `/api/goods/skus/{goodsId}` | GET | 获取商品SKU列表 |
+| `/api/goods/skus/{goodsId}` | POST | 批量保存商品SKU（先删后插，需管理员权限） |
+
+### 3.5 商品图片接口
 
 | 接口路径 | 请求方式 | 说明 |
 |----------|----------|------|
@@ -346,7 +427,7 @@ CREATE TABLE `order_item` (
 | `/api/goods-images/{id}` | PUT | 修改商品图片 |
 | `/api/goods-images/{id}` | DELETE | 删除商品图片 |
 
-### 3.5 商品参数接口
+### 3.6 商品参数接口
 
 | 接口路径 | 请求方式 | 说明 |
 |----------|----------|------|
@@ -354,7 +435,7 @@ CREATE TABLE `order_item` (
 | `/api/goods-params/{id}` | PUT | 修改商品参数 |
 | `/api/goods-params/{id}` | DELETE | 删除商品参数 |
 
-### 3.6 品牌接口
+### 3.7 品牌接口
 
 | 接口路径 | 请求方式 | 说明 |
 |----------|----------|------|
@@ -366,7 +447,7 @@ CREATE TABLE `order_item` (
 | `/api/brands/{id}` | DELETE | 删除品牌 |
 | `/api/brands/upload` | POST | 上传品牌Logo |
 
-### 3.7 分类接口
+### 3.8 分类接口
 
 | 接口路径 | 请求方式 | 说明 |
 |----------|----------|------|
@@ -378,7 +459,7 @@ CREATE TABLE `order_item` (
 | `/api/categories/{id}` | DELETE | 删除分类 |
 | `/api/categories/tree` | GET | 获取分类树形结构 |
 
-### 3.7 用户接口
+### 3.9 用户接口
 
 | 接口路径 | 请求方式 | 说明 |
 |----------|----------|------|
@@ -386,13 +467,13 @@ CREATE TABLE `order_item` (
 | `/api/user/info` | GET | 获取用户信息 |
 | `/api/user/update` | PUT | 更新用户信息 |
 
-### 3.8 管理员接口
+### 3.10 管理员接口
 
 | 接口路径 | 请求方式 | 说明 |
 |----------|----------|------|
 | `/api/admin/login` | POST | 管理员账号密码登录 |
 
-### 3.9 订单接口
+### 3.11 订单接口
 
 | 接口路径 | 请求方式 | 说明 |
 |----------|----------|------|
@@ -411,6 +492,8 @@ CREATE TABLE `order_item` (
 - 商品详情查看
 - 商品管理（增删改查）
 - 商品图片上传
+- 商品规格属性管理（颜色、尺寸等）
+- 商品SKU管理（规格组合 → 独立价格/库存/图片）
 
 ### 4.2 用户模块
 - 微信小程序授权登录
@@ -418,10 +501,10 @@ CREATE TABLE `order_item` (
 - 收货地址管理
 
 ### 4.3 购物车模块
-- 添加商品到购物车
+- 添加商品到购物车（支持SKU选择）
 - 修改购物车商品数量
 - 删除购物车商品
-- 查询购物车列表
+- 查询购物车列表（含SKU规格信息）
 
 ### 4.4 订单模块
 - 创建订单

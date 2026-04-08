@@ -1,6 +1,7 @@
 package com.yamaha.util;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +46,9 @@ public class JwtUtil {
                     .setSigningKey(secret)
                     .parseClaimsJws(token)
                     .getBody();
+        } catch (ExpiredJwtException e) {
+            // 让调用方区分过期和无效
+            throw e;
         } catch (Exception e) {
             return null;
         }
@@ -55,27 +59,39 @@ public class JwtUtil {
     }
 
     public Long getUserIdFromToken(String token) {
-        Claims claims = getClaimsByToken(token);
-        if (claims == null) {
+        try {
+            Claims claims = getClaimsByToken(token);
+            if (claims == null) {
+                return null;
+            }
+            return Long.valueOf(claims.get("userId").toString());
+        } catch (ExpiredJwtException e) {
             return null;
         }
-        return Long.valueOf(claims.get("userId").toString());
     }
 
     public String getOpenidFromToken(String token) {
-        Claims claims = getClaimsByToken(token);
-        if (claims == null) {
+        try {
+            Claims claims = getClaimsByToken(token);
+            if (claims == null) {
+                return null;
+            }
+            return claims.get("openid").toString();
+        } catch (ExpiredJwtException e) {
             return null;
         }
-        return claims.get("openid").toString();
     }
 
     public boolean isUserToken(String token) {
-        Claims claims = getClaimsByToken(token);
-        if (claims == null) {
+        try {
+            Claims claims = getClaimsByToken(token);
+            if (claims == null) {
+                return false;
+            }
+            return "user".equals(claims.get("type"));
+        } catch (ExpiredJwtException e) {
             return false;
         }
-        return "user".equals(claims.get("type"));
     }
 
     public String generateAdminToken(Long adminId, String username) {
@@ -96,27 +112,39 @@ public class JwtUtil {
     }
 
     public Long getAdminIdFromToken(String token) {
-        Claims claims = getClaimsByToken(token);
-        if (claims == null) {
+        try {
+            Claims claims = getClaimsByToken(token);
+            if (claims == null) {
+                return null;
+            }
+            return Long.valueOf(claims.get("adminId").toString());
+        } catch (ExpiredJwtException e) {
             return null;
         }
-        return Long.valueOf(claims.get("adminId").toString());
     }
 
     public String getUsernameFromToken(String token) {
-        Claims claims = getClaimsByToken(token);
-        if (claims == null) {
+        try {
+            Claims claims = getClaimsByToken(token);
+            if (claims == null) {
+                return null;
+            }
+            return claims.get("username").toString();
+        } catch (ExpiredJwtException e) {
             return null;
         }
-        return claims.get("username").toString();
     }
 
     public boolean isAdminToken(String token) {
-        Claims claims = getClaimsByToken(token);
-        if (claims == null) {
+        try {
+            Claims claims = getClaimsByToken(token);
+            if (claims == null) {
+                return false;
+            }
+            return "admin".equals(claims.get("type"));
+        } catch (ExpiredJwtException e) {
             return false;
         }
-        return "admin".equals(claims.get("type"));
     }
 
     public static String generateSecret() {
