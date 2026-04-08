@@ -52,7 +52,10 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
         goods.setPrice(goodsDTO.getPrice());
         goods.setStock(goodsDTO.getStock());
         goods.setDescription(goodsDTO.getDescription());
-        
+        if (goodsDTO.getImage() != null && !goodsDTO.getImage().isEmpty()) {
+            goods.setImage(goodsDTO.getImage());
+        }
+
         this.save(goods);
         return goods;
     }
