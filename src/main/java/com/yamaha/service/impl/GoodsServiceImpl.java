@@ -89,6 +89,7 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
         
         // 更新商品信息
         goods.setName(goodsDTO.getName());
+        goods.setCategoryId(goodsDTO.getCategoryId());
         goods.setPrice(goodsDTO.getPrice());
         goods.setStock(goodsDTO.getStock());
         goods.setDescription(goodsDTO.getDescription());

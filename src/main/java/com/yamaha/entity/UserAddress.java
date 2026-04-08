@@ -35,7 +35,9 @@ public class UserAddress implements Serializable {
     @TableField(fill = FieldFill.INSERT)
     private Integer deleted;
 
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 }
